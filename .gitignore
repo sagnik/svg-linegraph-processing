@@ -1,0 +1,5 @@
+*~
+*.pickle
+*.pyc
+*.swp
+data/*
