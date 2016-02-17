@@ -14,12 +14,19 @@ classDict={
    6:'figurelabel',
    7:'unknown',
 }
+
 def main():
+    '''
     dataDir="../data/"
     wcJsonDir=dataDir+"wcjsons/"
     wcPngDir=dataDir+"wcpngs/"
     modelLoc=dataDir+"wordclassifymodel-rf.pickle"
-
+    '''
+    #for files in the "code" directory, just for testing
+    dataDir="../data/"
+    wcJsonDir="./"
+    modelLoc=dataDir+"wordclassifymodel-rf.pickle"
+ 
     jsonLoc=sys.argv[1]
     ft=feWC(jsonLoc)
     clf=pickle.load(open(modelLoc))
