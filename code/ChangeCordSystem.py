@@ -39,7 +39,11 @@ def main():
         iB=js['ImageBB']
         for i,t in enumerate(js['ImageText']):
             tB=t['TextBB']
-            js['ImageText'][i]['TextBB']=[tB[0]-iB[0],tB[1]-iB[1],tB[2]-iB[0],tB[3]-iB[1]]
+            if 'mod' not in jsonLoc:
+                js['ImageText'][i]['TextBB']=[tB[0]-iB[0],tB[1]-iB[1],tB[2]-iB[0],tB[3]-iB[1]]
+            else:
+                js['ImageText'][i]['TextBB']=[x/2 for x in tB]
+                #print js['ImageText'][i]['TextBB']
     
     if not pngcropped:
         #For some reason, we increased the figBB and translated all paths by 5
@@ -69,8 +73,10 @@ def main():
             tB=t['TextBB']
             js['ImageText'][i]['TextBB']=[x*tR+5 for x in tB] 
           
-   
-    json.dump(js,open(jsonLoc[:-5]+"-tr.json","wb"))    
+    if 'mod' in jsonLoc:
+        json.dump(js,open(jsonLoc[:-9]+"-tr.json","wb"))    
+    else:    
+        json.dump(js,open(jsonLoc[:-5]+"-tr.json","wb"))    
         
 if __name__=="__main__":
     main()

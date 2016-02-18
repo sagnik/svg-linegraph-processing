@@ -3,3 +3,6 @@
 *.pyc
 *.swp
 data/*
+code/testsvgs/
+code/testpngs/
+code/testjsons/

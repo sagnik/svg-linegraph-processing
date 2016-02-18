@@ -10,31 +10,36 @@ def isHorizontal(w1,w2):
     b2=w2['TextBB']
     return abs(b2[1]-b1[1])<TOLERANCE and abs(b2[3]-b1[3])<TOLERANCE
 
-def imagePixelExists(w1,w2,imLoc,pngfromsvg):
+def imagePixelExists(w1,w2,imLoc):
     im=np.asarray(Image.open(imLoc))
-    #png from svg means the PNG image file was created from the SVG using InkScape,
-    #else it was crop from the PDF. If it was cropped from the PDF, we need not worry.
-    #else, we need to convert the co-ordinate system of the  
-      
-def mergeScores(lw,lWs,imageLoc,pngfromsvg):
+    bbw1=w1[ImageBB]
+    bbw2=w2[ImageBB]
+    if not jsonCordChanged:
+        bbw1=[bbw1[0]-imBB[0],bbw2[1]-imBB[1],bbw1[]  
+    left=w1
+    right=w2 
+    if w1['TextBB'][x1
+
+def mergeScores(lw,lWs,imageLoc):
     mWList=[]
     for w in lWs:
         if not isHorizontal(lw,w):
             mWList.append((w,0))
-        elif imagePixelExists(lw,w,imageLoc,pngfromsvg):
+        elif imagePixelExists(lw,w,imageLoc):
             mWList.append((w,0))
         else:
             mWList.append((w,hDist(lw,w))) 
     return mWList      
     
-def combineLegend(jsonLoc,ImageLoc,pngfromsvg=False):
+def combineLegend(jsonLoc,ImageLoc,svgLoc,pngfromsvg=False,jsonCordChanged=True):
     #lW=legend Word
-    lWs=[x for x in open(jsonLoc)['ImageText'] if x['TextLabel']=='legend']
+    imBB=json.load(open(jsonLoc))['ImageBB']
+    lWs=[x for x in json.load(open(jsonLoc))['ImageText'] if x['TextLabel']=='legend']
     finalLegends=[]
     while len(lWs)>0:
         lW=lWs[0]
         lWs=lWs[1:]
-        pWs=mergeScores(lW,removeWord(lW,lWs),ImageLoc,pngfromsvg)
+        pWs=mergeScores(lW,removeWord(lW,lWs),ImageLoc,pngfromsvg,jsonCordChanged,imBB,svgLoc)
         mergedlW,mergeWord=merge(lW,pWs)
         if mergedlW!=None:
             lWs=removeWord(mergeWord,lWs)

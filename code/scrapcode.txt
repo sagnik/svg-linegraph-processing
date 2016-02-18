@@ -1,0 +1,12 @@
+from PIL import Image,ImageDraw
+import json
+
+for f in fs[0:10]:
+    im=Image.open("../data/trpngs/"+f[:-9]+".png")
+    js=json.load(open("../data/wctrjsons/"+f))
+    len(js['ImageText'])
+    draw = ImageDraw.Draw(im)
+    for t in js['ImageText']:
+        if t['TextLabel']=='legend':
+            draw.rectangle(t['TextBB'],outline="blue")
+    im.save("../data/"+f[:-9]+".png")
