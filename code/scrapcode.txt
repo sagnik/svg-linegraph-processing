@@ -10,3 +10,13 @@ for f in fs[0:10]:
         if t['TextLabel']=='legend':
             draw.rectangle(t['TextBB'],outline="blue")
     im.save("../data/"+f[:-9]+".png")
+
+########################################
+
+       if 'period' in lW['Text']:
+            for x in pWs:
+                print x[0]['Text'],"score: ",x[1]
+            print lW['Text'],"merged with"
+            print mergedlW,mergeWord;
+
+
