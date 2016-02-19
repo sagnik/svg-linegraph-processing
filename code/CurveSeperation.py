@@ -21,8 +21,7 @@ def writeSingleColorSVGs(dir,cDict,svgStartString,svgEndString):
             f.write(svgStartString+con+svgEndString)
         #print fL,"written"       
             
-def main():
-    svgLoc=sys.argv[1]
+def separateCurves(svgLoc):
     tree = ET.ElementTree(file=svgLoc)
     root = tree.getroot()
     colorDict={}
@@ -43,5 +42,8 @@ def main():
 
     writeSingleColorSVGs(svgLoc[:-4],colorDict,svgStartString+"\n",svgEndString)  
 
+def main():
+    separateCurves(sys.argv[1])
+  
 if __name__=="__main__":
     main() 

@@ -19,4 +19,40 @@ for f in fs[0:10]:
             print lW['Text'],"merged with"
             print mergedlW,mergeWord;
 
+###############################################
+
+import rsvg
+import cairo
+import xml.etree.cElementTree as ET
+
+img = cairo.ImageSurface(cairo.FORMAT_ARGB32, w,h)
+svgLoc="../testsvgs/hassan-Figure-2.svg"
+
+tree = ET.ElementTree(file=svgLoc)
+root = tree.getroot()
+W=float(root.get('width'))
+H=float(root.get('height'))
+
+img = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(W),int(H))
+
+ctx = cairo.Context(img)
+handle= rsvg.Handle(None, str(open(svgLoc).read()))
+handle.render_cairo(ctx)
+img.write_to_png(svgLoc[:-4]+".png")
+
+from skimage.io import imread
+from matplotlib import pyplot as plt
+import pylab 
+
+def show_img(img):
+     width = img.shape[1]/75.0
+     height = img.shape[0]*width/img.shape[1]
+     f = plt.figure(figsize=(width, height))
+     plt.imshow(img)
+     pylab.show()
+
+
+
+
+
 

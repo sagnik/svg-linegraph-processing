@@ -12,8 +12,8 @@ def main():
     '''
     subtractImageBB=False
     #for a single file in the "code" directory, just for testing.
-    orgPngDir="./testpngs/"
-    wcPngDir="./testpngs/"
+    orgPngDir="../data/trpngs/"
+    wcPngDir="../data/wctrlcpngs/"
      
     jsonLoc=sys.argv[1]
     js=json.load(open(jsonLoc))
@@ -22,9 +22,8 @@ def main():
 
     draw = ImageDraw.Draw(im)
 
-    for imt in js['ImageText']:
-        if imt['TextLabel']=='legend':
-            draw.rectangle(imt['TextBB'],outline="blue")
+    for imt in js['Legends']:
+           draw.rectangle(imt['TextBB'],outline="blue")
     
     im.save(wcPngDir+os.path.split(jsonLoc)[1][:-5]+".png")     
      
