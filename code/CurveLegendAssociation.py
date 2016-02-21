@@ -56,13 +56,13 @@ def curveScore(l,curve):
     if len(lnzps[0])==0 and len(rnzps[0])==0: #this means for this legend, we did not find a single pixel from the 
     #curve that is to the left or right of it.
         #print l['Text'],"has no points to the left or right for",cindex
-        return (None,None)
+        return (None,None,None)
     elif len(lnzps[0])!=0 and len(rnzps[0])==0:
         #print l['Text'],"has curve",cindex,"to the left of it, distance:",100-np.sort(lnzps[0])[-1]
-        return(cindex,100-np.sort(lnzps[0])[-1])
+        return(cindex,'l',20-np.sort(lnzps[0])[-1])
     elif len(lnzps[0])==0 and len(rnzps[0])!=0:
         #print l['Text'],"has curve",cindex,"to the right of it, distance:",np.sort(rnzps[0])[0]
-        return(cindex,np.sort(rnzps[0])[0])
+        return(cindex,'r',np.sort(rnzps[0])[0])
     else: #this means, some points from this curve belongs to both left and the right of the legend. That is improbable.
         print "Something wrong, a single curve has pixels on both sides of the image "
         return (None,None)
