@@ -24,21 +24,39 @@ for f in fs[0:10]:
 import rsvg
 import cairo
 import xml.etree.cElementTree as ET
+from skimage.io import imread
 
-img = cairo.ImageSurface(cairo.FORMAT_ARGB32, w,h)
 svgLoc="../testsvgs/hassan-Figure-2.svg"
+#svgLoc="../testsvgs/hassan-Figure-2/hassan-Figure-2-Curve-3.svg"
 
 tree = ET.ElementTree(file=svgLoc)
 root = tree.getroot()
-W=float(root.get('width'))
-H=float(root.get('height'))
+W=int(float(root.get('width')))
+H=int(float(root.get('height')))
 
-img = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(W),int(H))
+#img = cairo.ImageSurface(cairo.FORMAT_ARGB32, int(W),int(H))
+img = cairo.ImageSurface(cairo.FORMAT_RGB24, int(W),int(H))
 
 ctx = cairo.Context(img)
 handle= rsvg.Handle(None, str(open(svgLoc).read()))
 handle.render_cairo(ctx)
 img.write_to_png(svgLoc[:-4]+".png")
+
+im=imread(open(svgLoc[:-4]+".png"))
+
+imgLoc="/home/sagnik/codes/svg-linegraph-processing/data/old-data/wcpngs/10.1.1.159.6752-Figure-2-mod-wcp.png"
+im=imread(imgLoc)
+show_img(im)
+
+from PIL import Image
+
+png = Image.open(imgLoc)
+png.load() # required for png.split()
+
+background = Image.new("RGB", png.size, (255, 255, 255))
+background.paste(png, mask=png.split()[3])
+
+background.show()
 
 from skimage.io import imread
 from matplotlib import pyplot as plt
