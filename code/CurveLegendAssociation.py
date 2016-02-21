@@ -11,6 +11,9 @@ from PIL import Image
 #def associateCurve(jsonLoc,svgLoc)
 from matplotlib import pyplot as plt
 import pylab 
+from pprint import pprint
+
+INF=99999
 
 def createCurves(svgLoc):
     separateCurves(svgLoc)
@@ -75,6 +78,24 @@ def legendCurveDictionary(legends,curveLocs):
         lcd[i]=[x for x in [curveScore(l,curve) for curve in curves] if x[1] is not None]
     return lcd   
 
+def associateCurveLegend(D,legends):
+    legendIndices=D.keys()
+    curveIndices=[]
+    for x in D.keys():
+        for y in D[x]:
+            curveIndices.append(int(y[0]))
+    curveIndices=list(set(curveIndices))
+    #print legendIndices,curveIndices
+    cDict={}
+    lDict={}
+    for i,x in enumerate(legendIndices):
+        cDict[i]=x
+    for i,x in enumerate(curveIndices):
+        lDict[i]=x
+    pprint(cDict)
+    pprint(lDict)
+
+
 def main():
     jsonLoc=sys.argv[1]
     svgLoc=sys.argv[2]
@@ -101,8 +122,11 @@ def main():
         #print len(legends),len(pngcurvelocs)
         D=legendCurveDictionary(legends,pngcurvelocs) 
         for l in D.keys():
-            #print D[l]
-            print "legend",legends[l]['Text'],"has curves at distances",D[l] 
+           if len(D[l])==0:
+               del D[l]
+        for l in D.keys():      
+            print "legend",l,legends[l]['Text'],"has curves at distances",D[l]
+        associateCurveLegend(D,legends) 
     except KeyError:
         print 'Legend regions not found in the JSON, exiting'
         sys.exit(1)
