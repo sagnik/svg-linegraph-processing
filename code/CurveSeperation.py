@@ -9,7 +9,7 @@ def getColorFromStyle(styleString):
         return None
 
 def writeSingleColorSVGs(dir,cDict,svgStartString,svgEndString):
-    for index,c in enumerate([x for x in cDict.keys() if x != "#000000"]):
+    for index,c in enumerate([x for x in cDict.keys() if x != "#000000" and x!="#ffffff"]):
         ps=cDict[c]
         #print len(ps)
         con=""

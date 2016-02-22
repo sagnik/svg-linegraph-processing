@@ -166,6 +166,9 @@ def main():
         #pprint(D)
         #for l in D.keys():      
         #    print "legend",l,legends[l]['Text'],"has curves at distances",D[l]
+        if len(D.keys())==0:
+            print "we couldn't find any curve for any single legend"
+            sys.exit(1)         
         clAssociation=associateCurveLegend(D,legends) 
         for pair in clAssociation:
             #print legends[pair[0]]['Text'], "is associated with curve",pair[1]
