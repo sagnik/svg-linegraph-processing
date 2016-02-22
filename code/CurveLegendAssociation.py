@@ -12,6 +12,7 @@ from PIL import Image
 from matplotlib import pyplot as plt
 import pylab 
 from pprint import pprint
+from munkres import Munkres
 
 INF=99999
 
@@ -43,7 +44,7 @@ def curveScore(l,curve):
     lb=l['TextBB']
     elbl=[lb[0]-20,lb[1],lb[0],lb[3]]
     elbr=[lb[0],lb[1],lb[2]+20,lb[3]]
-    cindex=curve[0] 
+    cindex=int(curve[0]) 
     cdata=curve[1]
     #img=cdata[elb[1]:elb[3],elb[0]:elb[2]]
     imgl=cdata[elbl[1]:elbl[3],elbl[0]:elbl[2]]
@@ -85,16 +86,41 @@ def associateCurveLegend(D,legends):
         for y in D[x]:
             curveIndices.append(int(y[0]))
     curveIndices=list(set(curveIndices))
-    #print legendIndices,curveIndices
+    print len(legendIndices),len(curveIndices)
     cDict={}
     lDict={}
+    ccDict={}
     for i,x in enumerate(legendIndices):
-        cDict[i]=x
-    for i,x in enumerate(curveIndices):
         lDict[i]=x
-    pprint(cDict)
-    pprint(lDict)
+    for i,x in enumerate(curveIndices):
+        cDict[i]=x
+        ccDict[x]=i
 
+    #pprint(cDict)
+    #pprint(lDict)
+    costMatrix=[]
+    for i in range(len(legendIndices)):
+        legendCost=[INF]*max(len(curveIndices),len(legendIndices))  
+        curveIndicesThisLegend=[ccDict[x[0]] for x in D[lDict[i]]]
+        curveValuesThisLegend=[x[2] for x in D[lDict[i]]]
+        for index,curveIndex in enumerate(curveIndicesThisLegend):
+            legendCost[curveIndex]=curveValuesThisLegend[index]
+        #print "iteration",i,"legend",lDict[i],"has curves",curveIndicesThisLegend
+        costMatrix.append(legendCost)
+  
+    for i in range(0,len(curveIndices)-len(legendIndices)):
+        costMatrix.append([INF]*max(len(curveIndices),len(legendIndices))) 
+       
+    #pprint(costMatrix)
+    print np.array(costMatrix).shape
+    m = Munkres()
+    indexes = m.compute(costMatrix)
+    return [(lDict[pair[0]],cDict[pair[1]]) for pair in indexes if pair[0] in lDict and pair[1] in cDict] 
+
+def createLegendAssociatedImage(legend,curveNumber,dir):
+    im=Image.open(dir+"/"+os.path.split(dir)[-1]+"-Curve-"+str(curveNumber)+".png")
+    
+       
 
 def main():
     jsonLoc=sys.argv[1]
@@ -124,9 +150,13 @@ def main():
         for l in D.keys():
            if len(D[l])==0:
                del D[l]
-        for l in D.keys():      
-            print "legend",l,legends[l]['Text'],"has curves at distances",D[l]
-        associateCurveLegend(D,legends) 
+        #pprint(D)
+        #for l in D.keys():      
+        #    print "legend",l,legends[l]['Text'],"has curves at distances",D[l]
+        clAssociation=associateCurveLegend(D,legends) 
+        for pair in clAssociation:
+            print legends[pair[0]]['Text'], "is associated with curve",pair[1]
+            createLegendAssociatedImage(legend=legends[pair[0]],curveNumber=pair[1],dir=svgLoc[:-4]) 
     except KeyError:
         print 'Legend regions not found in the JSON, exiting'
         sys.exit(1)
