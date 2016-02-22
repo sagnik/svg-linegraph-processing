@@ -7,7 +7,7 @@ import json
 from skimage.io import imread
 from skimage.color import rgb2hsv
 import numpy as np
-from PIL import Image
+from PIL import Image,ImageDraw,ImageFont,ImageEnhance
 #def associateCurve(jsonLoc,svgLoc)
 from matplotlib import pyplot as plt
 import pylab 
@@ -119,6 +119,18 @@ def associateCurveLegend(D,legends):
 
 def createLegendAssociatedImage(legend,curveNumber,dir):
     im=Image.open(dir+"/"+os.path.split(dir)[-1]+"-Curve-"+str(curveNumber)+".png")
+    #print  
+    boxloc=[int(x) for x in legend['TextBB']]
+    text=legend['Text']
+    fontloc="verdana.ttf"
+    fontsize=7
+    color=(0,0,0)
+    font = ImageFont.truetype(fontloc,fontsize)
+    draw = ImageDraw.Draw(im)
+    draw.text((boxloc[0], boxloc[1]),text,(0,0,0),font=font)
+   
+    im.save(dir+"/"+os.path.split(dir)[-1]+"-curve-"+str(curveNumber)+"-cla.png")
+
     
        
 
@@ -145,6 +157,7 @@ def main():
     
     try:
         legends=json.load(open(jsonLoc))['Legends']
+        js=json.load(open(jsonLoc))
         #print len(legends),len(pngcurvelocs)
         D=legendCurveDictionary(legends,pngcurvelocs) 
         for l in D.keys():
@@ -155,8 +168,10 @@ def main():
         #    print "legend",l,legends[l]['Text'],"has curves at distances",D[l]
         clAssociation=associateCurveLegend(D,legends) 
         for pair in clAssociation:
-            print legends[pair[0]]['Text'], "is associated with curve",pair[1]
+            #print legends[pair[0]]['Text'], "is associated with curve",pair[1]
             createLegendAssociatedImage(legend=legends[pair[0]],curveNumber=pair[1],dir=svgLoc[:-4]) 
+            js['Legends'][pair[0]]['Curve']=pair[1]
+            json.dump(js,open(jsonLoc[:-5]+"-cla.json","wb"))
     except KeyError:
         print 'Legend regions not found in the JSON, exiting'
         sys.exit(1)
