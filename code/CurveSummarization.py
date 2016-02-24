@@ -53,7 +53,7 @@ def getCommonCurvePoints(curvePointsDict):
     commonCurvexs=reduce(np.intersect1d,(x for x in curvexs))
     commonCurvePoints=[] 
     sufficientCommonXpoints=False        
-    if len(commonCurvexs)>30:
+    if len(commonCurvexs)>20:
         print "sufficient common x points found for all curves" 
         sufficientCommonXpoints=True
     else:
@@ -85,7 +85,6 @@ def getCommonCurvePoints(curvePointsDict):
         
 def getTrend(points):
     sp=sorted(points, key=lambda tup: tup[0])
-    #print [(p[0],p[1]) for p in sp]
     increases=0
     decreases=0
     stable=0
@@ -139,6 +138,8 @@ def main():
         else:
             ccpsLegends=getCommonCurvePoints(curvePointsDict)
             if len(ccpsLegends)>0:
+                js=json.load(open(jsonLoc))
+                legendcurves=[]  
                 for curveLegend in ccpsLegends:
                     curve=curveLegend[0]
                     legend=curveLegend[1]
@@ -149,10 +150,13 @@ def main():
                     else:
                         trendString=' '.join(["Curve",legend['Text'],"is", str(trend[0]),"% increasing", \
                         str(trend[1]), "% decreasing", str(trend[2]),"% stable"])
-                    print trendString
+                    legend['Trend']=trendString
+                    legendcurves.append(legend)
+                js['CurveLegend']=legendcurves
+                json.dump(js,open(jsonLoc[:-5]+"-cs.json","wb"))
             else:
-                print "Not sufficient common points for the curves"        
-              
+                print "Not sufficient points for any curve"        
+                sys.exit(1)                
     except KeyError:
         print 'Legend regions not found in the JSON, exiting'
         sys.exit(1)
