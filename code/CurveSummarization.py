@@ -1,3 +1,4 @@
+from __future__ import division
 import sys
 import os
 from skimage.io import imread
@@ -34,40 +35,76 @@ def createPng(svgLoc,W,H):
     nonalphaPng.paste(png, mask=png.split()[3])
     nonalphaPng.save(svgLoc[:-4]+".png")
 
-def getSampleXIndices(curvePointsDict):
-    curvexs=[np.unique(curvePointsDict[k][0][1]) for k in curvePointsDict]
-    '''
-    this is to show where the x and y points are  
+#TODO remove points that can belong to the legend region.
+def notLegend(p,pp):
+    sp=sorted(pp, key=lambda tup: tup[1])
+    loc=sp.index(p)
+    if loc==0 or loc==len(sp)-1 or loc==len(sp)-2: 
+        return True;
+    else:
+        return not (sp[loc-1][1]==sp[loc][1] and sp[loc][1]==sp[loc+1][1]) #three consecutive points have same y value
+        
 
-    for k in curvePointsDict.keys():
-        print "curve",curvePointsDict[k][1]['Curve'],"points",[(x,y) for x,y in zip(curvePointsDict[k][0][1],curvePointsDict[k][0][0])]
-        svgDir="testsvgs/hassan-Figure-2"
-        show_img(imread(svgDir+"/"+os.path.split(svgDir)[-1]+"-Curve-"+str(curvePointsDict[k][1]['Curve'])+".png"))
-    '''
+def getCommonCurvePoints(curvePointsDict):
+    curvexs=[np.unique(curvePointsDict[k][0][1]) for k in curvePointsDict]
     commonCurvexs=[]
     if len(curvexs)==1:
         commonCurvexs=curvexs[0] 
     commonCurvexs=reduce(np.intersect1d,(x for x in curvexs))
-    #print commonCurvexs,type(commonCurvexs)  
-    commonCuvrexIndices=[]  
-    for curvex in curvexs:
-        #print curvex,type(curvex)
-        c=[np.where((curvex==x))[0][0] for x in commonCurvexs]
-        points=[(curvePointsDict[k][0][1][i],curvePointsDict[k][0][0][i]) for i in c] 
-    
+    commonCurvePoints=[] 
+    sufficientCommonXpoints=False        
+    if len(commonCurvexs)>30:
+        print "sufficient common x points found for all curves" 
+        sufficientCommonXpoints=True
+    else:
+        print "we couldn't find sufficient common x points for all curves, treating each curve separately" 
+               
     for curvex,k in zip(curvexs,curvePointsDict.keys()):
-        #print curvex,type(curvex)
-        c=[np.where((curvex==x))[0][0] for x in commonCurvexs]
-        
-        points=[(curvePointsDict[k][0][1][i],curvePointsDict[k][0][0][i]) for i in c] 
+        c=[]
+        if sufficientCommonXpoints:
+            c=[np.where((curvex==x))[0][0] for x in commonCurvexs]
+        else:
+           c=range(len(curvex))
+        possiblePoints=[(curvePointsDict[k][0][1][i],curvePointsDict[k][0][0][i]) for i in c] 
+        #points=[p for p in possiblePoints if notLegend(p,possiblePoints)] 
+        #this method for legend detection isn't working very well now.
+        points=possiblePoints
+        if len(points)>20:  
+            commonCurvePoints.append((points,curvePointsDict[k][1]))
+    ''' 
+    for ccp,k in zip(commonCurvePoints,curvePointsDict.keys()):
         svgDir="testsvgs/hassan-Figure-2"
         im=imread(svgDir+"/"+os.path.split(svgDir)[-1]+"-Curve-"+str(curvePointsDict[k][1]['Curve'])+".png")
-        random.shuffle(points)
-        for p in points[0:100]:
+        #print ccp
+        for p in ccp[0]:
+            #print p 
             im[p[1]:p[1]+6,p[0]:p[0]+6]=[255,0,0] 
         show_img(im) 
+    '''
+    return commonCurvePoints
         
- 
+def getTrend(points):
+    sp=sorted(points, key=lambda tup: tup[0])
+    #print [(p[0],p[1]) for p in sp]
+    increases=0
+    decreases=0
+    stable=0
+    for i in range(len(sp)-1):
+        if sp[i][1]>sp[i+1][1]:
+            increases+=1
+        elif sp[i][1]<sp[i+1][1]:
+            decreases+=1
+        else:
+            stable+=1
+    stable=max(0,stable-20) #correction for legend region
+    for i,x in enumerate([increases,decreases,stable]):
+        if x>= 0.5*(increases+decreases+stable):
+            return (i,None,None)   
+    else:
+        total=increases+decreases+stable 
+        return (round(100*(increases/total)),round(100*(decreases/total)),round(100*(stable/total)))    
+  
+     
 def main():
     jsonLoc=sys.argv[1]
     svgLoc=sys.argv[2]
@@ -90,7 +127,7 @@ def main():
     pngcurvelocs=[svgLoc[:-4]+"/"+x for x in os.listdir(svgLoc[:-4]) if 'Curve' in x and x.endswith('png')]
     
     curvePointsDict={}
-
+    absTrends=['increasing','decreasing','alternate']
     try:
         legends=json.load(open(jsonLoc))['Legends']
         for legend in legends:
@@ -100,7 +137,22 @@ def main():
             print "no legend associated with a curve"
             sys.exit(1) 
         else:
-            samplePointXindices=getSampleXIndices(curvePointsDict)           
+            ccpsLegends=getCommonCurvePoints(curvePointsDict)
+            if len(ccpsLegends)>0:
+                for curveLegend in ccpsLegends:
+                    curve=curveLegend[0]
+                    legend=curveLegend[1]
+                    trend=getTrend(curve)
+                    trendString=""
+                    if trend[1] is None: 
+                        trendString=' '.join(["Curve",legend['Text'],"has",absTrends[trend[0]],"trend"])
+                    else:
+                        trendString=' '.join(["Curve",legend['Text'],"is", str(trend[0]),"% increasing", \
+                        str(trend[1]), "% decreasing", str(trend[2]),"% stable"])
+                    print trendString
+            else:
+                print "Not sufficient common points for the curves"        
+              
     except KeyError:
         print 'Legend regions not found in the JSON, exiting'
         sys.exit(1)
