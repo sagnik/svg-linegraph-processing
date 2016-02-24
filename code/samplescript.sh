@@ -1,2 +1,2 @@
-time for f in ../data/wctrlcclajsons/*-lc-cla.json; do y=`basename $f`; z="../data/svgs/"${y:0:${#y}-19}".svg"; echo $z; python CurveSummarization.py $f $z; echo "--------------------------------------"; done >> logs/curveSummarization.log
+time for f in ../data/wctrlcclacsjsons/*-lc-cla-cs.json; do y=`basename $f`; z="../data/svgs/"${y:0:${#y}-22}".svg"; echo $z; python CreateDisplayHTML.py $z $f; echo "--------------------------------------"; done 
 

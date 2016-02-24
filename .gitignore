@@ -6,4 +6,5 @@ data/*
 code/testsvgs/
 code/testpngs/
 code/testjsons/
+logs/
 *.log
